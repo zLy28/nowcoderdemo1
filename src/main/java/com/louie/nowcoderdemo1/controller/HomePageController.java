@@ -1,6 +1,7 @@
 package com.louie.nowcoderdemo1.controller;
 
 import com.louie.nowcoderdemo1.entity.DiscussPost;
+import com.louie.nowcoderdemo1.entity.Page;
 import com.louie.nowcoderdemo1.entity.User;
 import com.louie.nowcoderdemo1.service.DiscussPostService;
 import com.louie.nowcoderdemo1.service.UserService;
@@ -25,8 +26,10 @@ public class HomePageController {
     private UserService userService;
 
     @RequestMapping("/index")
-    public String getHomePage(Model model) {
-        List<DiscussPost> discussPost = discussPostService.getDiscussPost(0, 0, 10);
+    public String getHomePage(Model model, Page page) {
+        page.setTotalNumOfPost(discussPostService.countPosts(0));
+        page.setPath("/index");
+        List<DiscussPost> discussPost = discussPostService.getDiscussPost(0, page.getOffset(), page.getNumOfPostPerPage());
         List<Map<String, Object>> mapList = new ArrayList<>();
         if (discussPost != null) {
             for (DiscussPost post : discussPost
