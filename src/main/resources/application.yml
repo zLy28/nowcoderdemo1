@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/community?serverTimezone=UTC&useUnicode=true&characterEnconding=utf-8
+    username: root
+    password: abc123
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 5
+      idle-timeout: 30000
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.louie.nowcoderdemo1.entity
+  configuration:
+    use-generated-keys: true
+    map-underscore-to-camel-case: true
+
+
+
+
