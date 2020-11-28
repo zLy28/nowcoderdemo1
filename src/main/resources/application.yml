@@ -11,6 +11,12 @@ spring:
       idle-timeout: 30000
   thymeleaf:
     cache: false
+  mail:
+    host: smtp.mailtrap.io
+    port: 2525
+    username: 0bf63649f03abf
+    password: e1c6f2887f5bc3
+    protocol: smtp
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
@@ -18,6 +24,8 @@ mybatis:
   configuration:
     use-generated-keys: true
     map-underscore-to-camel-case: true
+
+
 
 
 
