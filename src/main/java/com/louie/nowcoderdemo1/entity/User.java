@@ -14,6 +14,21 @@ public class User {
     private String headerUrl;
     private Date createTime;
 
+    public User() {
+    }
+
+    public User(String username, String password, String salt, String email, int type, int status, String activationCode, String headerUrl, Date createTime) {
+        this.username = username;
+        this.password = password;
+        this.salt = salt;
+        this.email = email;
+        this.type = type;
+        this.status = status;
+        this.activationCode = activationCode;
+        this.headerUrl = headerUrl;
+        this.createTime = createTime;
+    }
+
     @Override
     public String toString() {
         return "User{" +

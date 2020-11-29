@@ -25,7 +25,14 @@ mybatis:
     use-generated-keys: true
     map-underscore-to-camel-case: true
 
+#self defined properties
+community:
+  path:
+    domain: http://localhost:8080
 
+server:
+  servlet:
+    context-path: /community
 
 
 
