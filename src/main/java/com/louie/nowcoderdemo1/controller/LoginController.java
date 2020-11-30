@@ -1,8 +1,11 @@
 package com.louie.nowcoderdemo1.controller;
 
+import com.google.code.kaptcha.Producer;
 import com.louie.nowcoderdemo1.entity.User;
 import com.louie.nowcoderdemo1.service.UserService;
 import com.louie.nowcoderdemo1.utils.CommunityConstant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,12 +13,23 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.imageio.ImageIO;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Map;
 
 @Controller
 public class LoginController implements CommunityConstant {
+    private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
+
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private Producer kaptchaProducer;
 
     @RequestMapping(path = "/register",method = RequestMethod.GET)
     public String getRegister() {
@@ -25,6 +39,25 @@ public class LoginController implements CommunityConstant {
     @RequestMapping(path = "/login",method = RequestMethod.GET)
     public String getLogin() {
         return "/site/login";
+    }
+
+    @RequestMapping(path = "/kaptcha",method = RequestMethod.GET)
+    public void getKaptcha(HttpServletResponse response, HttpSession session) {
+        //generate validation code
+        String text = kaptchaProducer.createText();
+        BufferedImage image = kaptchaProducer.createImage(text);
+
+        //store validation code in session
+        session.setAttribute("kaptcha", text);
+
+        //response to browser
+        response.setContentType("image/png");
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            ImageIO.write(image, "png", outputStream);
+        } catch (IOException e) {
+            logger.error("验证码无响应。"+e.getMessage());
+        }
     }
 
     @RequestMapping(path = "/register",method = RequestMethod.POST)
