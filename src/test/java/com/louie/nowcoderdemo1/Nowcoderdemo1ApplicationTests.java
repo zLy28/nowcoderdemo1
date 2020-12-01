@@ -1,8 +1,10 @@
 package com.louie.nowcoderdemo1;
 
 import com.louie.nowcoderdemo1.dao.DiscussPostMapper;
+import com.louie.nowcoderdemo1.dao.LoginTicketMapper;
 import com.louie.nowcoderdemo1.dao.UserMapper;
 import com.louie.nowcoderdemo1.entity.DiscussPost;
+import com.louie.nowcoderdemo1.entity.LoginTicket;
 import com.louie.nowcoderdemo1.entity.User;
 import com.louie.nowcoderdemo1.service.DiscussPostService;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,9 @@ class Nowcoderdemo1ApplicationTests {
     @Autowired
     private DiscussPostService discussPostService;
 
+    @Autowired
+    private LoginTicketMapper loginTicketMapper;
+
     @Test
     void contextLoads() {
         List<DiscussPost> discussPosts = discussPostService.getDiscussPost(0, 0, 10);
@@ -43,6 +48,22 @@ class Nowcoderdemo1ApplicationTests {
         userMapper1.insertUser(user);
         User zzzzly = userMapper1.selectByName("zzzzly");
         System.out.println(zzzzly);
+    }
+
+    @Test
+    public void testLoginTicket() {
+        LoginTicket loginTicket = new LoginTicket();
+        loginTicket.setUserId(123);
+        loginTicket.setTicket("abc");
+        loginTicket.setStatus(0);
+        loginTicket.setExpired(new Date(System.currentTimeMillis() + 1000 * 60 * 10));
+        loginTicketMapper.insertLoginTicket(loginTicket);
+
+        LoginTicket ticket = loginTicketMapper.getLoginTicket("abc");
+        System.out.println(ticket);
+
+        int abc = loginTicketMapper.updateLoginTicket("abc", 1);
+        System.out.println(abc);
     }
 
 
