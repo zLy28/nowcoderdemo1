@@ -29,10 +29,10 @@ mybatis:
 community:
   path:
     domain: http://localhost:8080
+    upload: c:/upload_pictures
 
 server:
   servlet:
     context-path: /community
-
 
 
