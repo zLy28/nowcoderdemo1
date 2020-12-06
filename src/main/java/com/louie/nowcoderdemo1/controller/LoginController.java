@@ -1,20 +1,23 @@
 package com.louie.nowcoderdemo1.controller;
 
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import com.google.code.kaptcha.Producer;
 import com.louie.nowcoderdemo1.entity.User;
 import com.louie.nowcoderdemo1.service.UserService;
 import com.louie.nowcoderdemo1.utils.CommunityConstant;
+import com.louie.nowcoderdemo1.utils.CommunityUtil;
+import com.louie.nowcoderdemo1.utils.MailFunction;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.server.Session;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
@@ -23,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Map;
 
 @Controller
@@ -37,6 +41,12 @@ public class LoginController implements CommunityConstant {
 
     @Value("${server.servlet.context-path}")
     private String contextPath;
+
+    @Autowired
+    private TemplateEngine templateEngine;
+
+    @Autowired
+    private MailFunction mailFunction;
 
     @RequestMapping(path = "/register",method = RequestMethod.GET)
     public String getRegister() {
@@ -131,5 +141,48 @@ public class LoginController implements CommunityConstant {
     public String logout(@CookieValue("ticket") String ticket) {
         userService.logout(ticket);
         return "redirect:/login";
+    }
+
+    @RequestMapping(path = "/forgetCode", method = RequestMethod.GET)
+    public String forgetCode() {
+        return "/site/forget";
+    }
+
+    //send validation code
+    @RequestMapping(path = "/forgetCode/sendCode", method = RequestMethod.GET)
+    @ResponseBody
+    public String sendForgetCode(String email, HttpSession session) {
+        if (StringUtils.isBlank(email)) {
+            return CommunityUtil.getJSONString(1, "邮箱不能为空！");
+        }
+
+        Context context = new Context();
+        context.setVariable("email", email);
+        String code = CommunityUtil.generateUUID().substring(0, 4);
+        context.setVariable("verifyCode", code);
+        String content = templateEngine.process("/mail/forget", context);
+        mailFunction.sendMail(email, "找回密码", content);
+
+        session.setAttribute("verifyCode", code);
+
+        return CommunityUtil.getJSONString(0);
+    }
+
+    @RequestMapping(path = "/forget/password", method = RequestMethod.POST)
+    public String resetPassword(HttpSession session, String email, String verifyCode, String password, Model model) {
+        String code = (String)session.getAttribute("verifyCode");
+        if (StringUtils.isBlank(code) || StringUtils.isBlank(verifyCode) || !code.equals(verifyCode)) {
+            model.addAttribute("codeMsg", "验证码错误。");
+            return "/site/forget";
+        }
+
+        Map<String, Object> map = userService.resetCode(email, password);
+        if (map.containsKey("user")) {
+            return "redirect:/login";
+        } else {
+            model.addAttribute("emailMsg", map.get("emailMsg"));
+            model.addAttribute("passwordMsg", map.get("passwordMsg"));
+            return "/site/forget";
+        }
     }
 }
