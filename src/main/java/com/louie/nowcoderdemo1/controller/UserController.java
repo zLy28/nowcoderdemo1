@@ -1,5 +1,6 @@
 package com.louie.nowcoderdemo1.controller;
 
+import com.louie.nowcoderdemo1.annotation.NeedLogin;
 import com.louie.nowcoderdemo1.entity.User;
 import com.louie.nowcoderdemo1.service.UserService;
 import com.louie.nowcoderdemo1.utils.CommunityUtil;
@@ -21,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/user")
@@ -42,12 +44,13 @@ public class UserController {
     @Autowired
     private HostHolder hostHolder;
 
-
+    @NeedLogin
     @RequestMapping(path = "/setting", method = RequestMethod.GET)
     public String getUserSettingPage() {
         return "/site/setting";
     }
 
+    @NeedLogin
     @RequestMapping(path = "/upload", method = RequestMethod.POST)
     public String uploadPicture(MultipartFile headerImage, Model model) {
         if (headerImage == null) {
@@ -56,7 +59,7 @@ public class UserController {
         }
 
         String originalFilename = headerImage.getOriginalFilename();
-        String suffix = originalFilename.substring(originalFilename.lastIndexOf(".")+1);
+        String suffix = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
         if (StringUtils.isBlank(suffix)) {
             model.addAttribute("error", "上传图片格式不正确！");
             return "/site/setting";
@@ -82,7 +85,7 @@ public class UserController {
     public void getHeader(HttpServletResponse response, @PathVariable("fileName") String fileName) {
         //get pictures on server
         fileName = uploadPath + "/" + fileName;
-        String suffix = fileName.substring(fileName.lastIndexOf(".")+1);
+        String suffix = fileName.substring(fileName.lastIndexOf(".") + 1);
         response.setContentType("image/" + suffix);
         try (
                 ServletOutputStream outputStream = response.getOutputStream();
@@ -96,6 +99,19 @@ public class UserController {
         } catch (IOException e) {
             logger.error("读取头像失败" + e.getMessage());
         }
+    }
 
+    @NeedLogin
+    @RequestMapping(path = "/changeCode", method = RequestMethod.POST)
+    public String changeCode(String oldPassword, String newPassword, Model model) {
+        User user = hostHolder.getUser();
+        Map<String, Object> map = userService.changePassword(oldPassword, newPassword, user.getId());
+        if (map == null || map.isEmpty()) {
+            return "redirect:/logout";
+        }else {
+            model.addAttribute("oldPasswordMsg", map.get("oldPasswordMsg"));
+            model.addAttribute("newPasswordMsg", map.get("newPasswordMsg"));
+            return "/site/setting";
+        }
     }
 }
