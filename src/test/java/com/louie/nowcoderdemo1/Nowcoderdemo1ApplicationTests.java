@@ -7,6 +7,7 @@ import com.louie.nowcoderdemo1.entity.DiscussPost;
 import com.louie.nowcoderdemo1.entity.LoginTicket;
 import com.louie.nowcoderdemo1.entity.User;
 import com.louie.nowcoderdemo1.service.DiscussPostService;
+import com.louie.nowcoderdemo1.utils.SensitiveFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +29,9 @@ class Nowcoderdemo1ApplicationTests {
 
     @Autowired
     private LoginTicketMapper loginTicketMapper;
+
+    @Autowired
+    private SensitiveFilter sensitiveFilter;
 
     @Test
     void contextLoads() {
@@ -66,6 +70,11 @@ class Nowcoderdemo1ApplicationTests {
         System.out.println(abc);
     }
 
-
+    @Test
+    public void testFilter() {
+        String s = "我可以吸毒，我可以嫖 娼，我可以赌       博";
+        String string = sensitiveFilter.filter(s);
+        System.out.println(string);
+    }
 
 }
